@@ -11,32 +11,36 @@ pipeline {
         stage('Checkout'){
            steps {
                 git credentialsId: 'f87a34a8-0e09-45e7-b9cf-6dc68feac670', 
-                url: 'https://github.com/pratik-mahalle/cicd-end-to-end.git',
                 branch: 'main'
            }
         }
 
-        stage('Build Docker'){
-            steps{
-                script{
+        stage('Build Docker Image') {
+            steps {
+                script {
+                    echo 'Building Docker Image'
                     sh '''
-                    echo 'Buid Docker Image'
                     docker build -t pratikmahalle17/cicd-e2e:${BUILD_NUMBER} .
                     '''
                 }
             }
         }
 
-        stage('Push the artifacts'){
-           steps{
-                script{
-                    sh '''
-                    echo 'Push to Repo'
-                    docker push pratikmahalle17/cicd-e2e:${BUILD_NUMBER}
-                    '''
+        stage('Push Docker Image') {
+            steps {
+                script {
+                    withCredentials([usernamePassword(credentialsId: '390c3b02-70dc-48b8-93dc-fdefe4ea29a3', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
+                        sh '''
+                        echo 'Logging in to Docker Hub'
+                        echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
+                        echo 'Pushing Docker Image'
+                        docker push pratikmahalle17/cicd-e2e:${BUILD_NUMBER}
+                        '''
+                    }
                 }
             }
         }
+
         
         stage('Checkout K8S manifest SCM'){
             steps {
