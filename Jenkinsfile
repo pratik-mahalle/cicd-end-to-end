@@ -1,5 +1,4 @@
 pipeline {
-    
     agent any 
     
     environment {
@@ -20,7 +19,7 @@ pipeline {
             steps{
                 script{
                     sh '''
-                    echo 'Buid Docker Image'
+                    echo 'Build Docker Image'
                     docker build -t pratikmahalle17/cicd-e2e:${BUILD_NUMBER} .
                     '''
                 }
@@ -51,8 +50,9 @@ pipeline {
                 script{
                     withCredentials([usernamePassword(credentialsId: '10ecc777-30fc-4216-af4c-6442565ae033', passwordVariable: 'GIT_PASSWORD', usernameVariable: 'GIT_USERNAME')]) {
                         sh '''
+                        cd deploy
                         cat deploy.yaml
-                        sed -i '' "s/32/${BUILD_NUMBER}/g" deploy.yaml
+                        sed -i "s/32/${BUILD_NUMBER}/g" deploy.yaml
                         cat deploy.yaml
                         git add deploy.yaml
                         git commit -m 'Updated the deploy yaml | Jenkins Pipeline'
